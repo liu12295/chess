@@ -4,7 +4,7 @@ import os, csv, json, re, sys
 from pprint import pprint
 import matplotlib.pyplot as plt
 import numpy as np
-
+ctrl = {}
 test = ""
 #test = "chess.html"
 
@@ -38,19 +38,24 @@ def ExtractRecords(tbl):
 #
 # Scrape the web...
 #
-def CollectPlayerHist(id):
+def CollectPlayerHist(id, name):
     player = {
-        "Name" : "",
+        "Name" : name,
         "Id" : id,
         "Events" : []
     }
+
+    # If we have the record already, then import it
+    # directly to save time
+    if ImportPlayerHist(player):
+        return player
 
     for page in range(1, 20):
 
         if test and os.path.isfile(test):
             soup = BeautifulSoup(open(test), 'html5lib');
         else:
-            url = "http://www.uschess.org/msa/MbrDtlTnmtHst.php?" + id + "." + str(page)
+            url = ctrl["baseURL"] + id + "." + str(page)
             print "Visit", url
             sys.stdout.flush()
             # If timeout due to firewall, use "export HTTP_PROXY=..." to make it work.
@@ -63,18 +68,6 @@ def CollectPlayerHist(id):
         prev_games = len(player["Events"]);
 
         for tbl in soup.find_all("table"):
-            if not player["Name"]:
-                player["Name"] = ExtractPlayerName(tbl, player["Id"])
-
-                # A table is meaningless unless we found the player's name
-                if not player["Name"]:
-                    continue;
-        
-                # If we have the record already, then import it
-                # directly to save time
-                if ImportPlayerHist(player):
-                    return player
-
             for record in ExtractRecords(tbl):
                 fields = record.find_all('td');
                 # Each record will have 5 columns/fields, namely:
@@ -159,7 +152,7 @@ def dump(players, verbose = False):
 # Import events from file
 #
 def ImportPlayerHist(player):
-    fname = player["Name"] + "." + player["Id"] + ".csv"
+    fname = player["Id"] + ".csv"
     if not os.path.isfile(fname):
         return False
 
@@ -180,7 +173,7 @@ def write2csv(player):
     if not player["Name"] or not player["Events"]:
         return
     
-    fname = player["Name"] + "." + player["Id"] + ".csv"
+    fname = player["Id"] + ".csv"
     print "Create", fname
 
     with open(fname, 'wb') as f:
@@ -194,18 +187,15 @@ def write2csv(player):
 #
 # main
 #
-# 11486738: CYRUS F LAKDAWALA
-# 14372263: ANTHONY LIU
-# 14883805: BRANDON YANG XIA
-# 15211462: MING LU
-# 15199505: NATHAN WEBER
-#
 
 ids = ["14372263", "15211462", "14883805", "15199505"]
 players = []
 
-for id in ids:
-    players.append(CollectPlayerHist(id))
+with open('chess.json') as f:
+    ctrl = json.load(f);
+
+for p in ctrl["players"]:
+    players.append(CollectPlayerHist(p["id"], p["name"]))
 
 
 # Visualize the data

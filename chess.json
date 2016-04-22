@@ -2,16 +2,12 @@
     "baseURL" : "http://www.uschess.org/msa/MbrDtlTnmtHst.php?",
     "players": [
         {
-            "id" : "11486738",
-            "name" : "CYRUS F LAKDAWALA"
-        },
-        {
             "id" : "14372263",
             "name" : "ANTHONY LIU"
         },
         {
             "id" : "14883805",
-            "name" : "BRANDON YANG XIA",
+            "name" : "BRANDON YANG XIA"
         },
         {
             "id" : "15211462",
