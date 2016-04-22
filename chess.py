@@ -188,11 +188,13 @@ def write2csv(player):
 # main
 #
 
-ids = ["14372263", "15211462", "14883805", "15199505"]
 players = []
 
-with open('chess.json') as f:
-    ctrl = json.load(f);
+try:
+    with open('chess.json') as f:
+        ctrl = json.load(f);
+except IOError as e:
+    sys.exit( "I/O error({0}): {1}".format(e.errno, e.strerror) + ": chess.json")
 
 for p in ctrl["players"]:
     players.append(CollectPlayerHist(p["id"], p["name"]))
