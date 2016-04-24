@@ -8,6 +8,51 @@ ctrl = {}
 test = ""
 #test = "chess.html"
 
+#
+# Player class
+#
+class Player(object):
+    def __init__(self, id, name):
+        self.Id = id
+        self.Name = name
+        self.Events = []
+
+    def num_events(self) :
+        return len(self.Events);
+
+    def has_no_event(self) :
+        return not self.Events
+
+    def has_any_event(self) :
+        return not self.has_no_event()
+
+    def ranking(self) :
+        if not self.Events:
+            return 0
+        else:
+            return self.Events[0]["Score"]
+
+    def add_event(self, event) :
+        self.Events.append(event)
+        return len(self.Events)
+    
+    #
+    # Write data to chess_<id>.csv file for player
+    #
+    def write2csv(self) :
+        if not self.Name or self.has_no_event():
+            return
+    
+        fname = self.Id + ".csv"
+        print "Create", fname
+
+        with open(fname, 'wb') as f:
+            w = csv.DictWriter(f, self.Events[0].keys())
+            w.writeheader()
+            for event in self.Events:
+                w.writerow(event)
+
+        return
 
 #
 # Extract player's name
@@ -39,11 +84,7 @@ def ExtractRecords(tbl):
 # Scrape the web...
 #
 def CollectPlayerHist(id, name):
-    player = {
-        "Name" : name,
-        "Id" : id,
-        "Events" : []
-    }
+    player = Player(id=id, name=name);
 
     # If we have the record already, then import it
     # directly to save time
@@ -65,7 +106,7 @@ def CollectPlayerHist(id, name):
         # Dump it to see the hierarchy
         # print soup.prettify(formatter=None).encode('utf-8')
 
-        prev_games = len(player["Events"]);
+        prev_games = player.num_events()
 
         for tbl in soup.find_all("table"):
             for record in ExtractRecords(tbl):
@@ -93,23 +134,19 @@ def CollectPlayerHist(id, name):
                     continue
 
                 # Append a new entry
-                player["Events"].append(event)
+                player.add_event(event)
 
         # We are done if no new entry is added
-        new_games = len(player["Events"]) - prev_games;
+        new_games = player.num_events() - prev_games;
         if new_games == 0 or test:
             break
 
-        print player["Name"], ":", new_games, "games are imported from", url
-
+        print player.Name, ":", new_games, "games are imported from", url
 
     # Write data to chess.csv
-    write2csv(player)
+    player.write2csv()
     
     return player
-
-def ranking(player):
-    return player["Events"][0]["Score"]
 
 #
 # Dump whatever we have got for this player
@@ -120,28 +157,29 @@ def dump(players, verbose = False):
     plot_last_games = 8000
 
     for player in players:
-        if player["Events"]:
-            plot_last_games = min(len(player["Events"]), plot_last_games)
+        if player.has_any_event():
+            plot_last_games = min(player.num_events(), plot_last_games)
 
 
-    sorted_players = sorted(players, key=lambda player: ranking(player), reverse=True)
+    # Sort players according to their latest ranking in descending order
+    sorted_players = sorted(players, key=lambda player: player.ranking(), reverse=True)
     
     for player in sorted_players:
-        if not player["Events"]:
+        if player.has_no_event():
             continue
         
-        print player["Name"], ":", "id", player["Id"], "games", len(player["Events"]), "ranking", ranking(player)
+        print player.Name, ":", "id", player.Id, "games", player.num_events(), "ranking", player.ranking()
         if verbose:
-            for event in player["Events"]:
+            for event in player.Events:
                 print event["Date"], event["Score"]
 
         sys.stdout.flush()
 
         # Plot setup
-        scores = [event["Score"] for event in player["Events"]][:plot_last_games]
+        scores = [event["Score"] for event in player.Events[:plot_last_games]]
         scores.reverse()
         games = range(len(scores))
-        plt.plot(games, scores, linestyles[idx], label=player["Name"]+":"+str(ranking(player)))
+        plt.plot(games, scores, linestyles[idx], label=player.Name+":"+str(player.ranking()))
 
         idx += 1
 
@@ -160,7 +198,7 @@ def dump(players, verbose = False):
 # Import events from file
 #
 def ImportPlayerHist(player):
-    fname = player["Id"] + ".csv"
+    fname = player.Id + ".csv"
     if not os.path.isfile(fname):
         return False
 
@@ -168,29 +206,10 @@ def ImportPlayerHist(player):
         r = csv.DictReader(f)
         for row in r:
             # Append a new entry
-            player["Events"].append(row)
+            player.add_event(row)
 
-    print player["Name"], ":", len(player["Events"]), "games are imported from", fname
-            
+    print player.Name, ":", player.num_events(), "games are imported from", fname
     return True
-
-#
-# Write data to chess_<id>.csv file for player
-#
-def write2csv(player):
-    if not player["Name"] or not player["Events"]:
-        return
-    
-    fname = player["Id"] + ".csv"
-    print "Create", fname
-
-    with open(fname, 'wb') as f:
-        w = csv.DictWriter(f, player["Events"][0].keys())
-        w.writeheader()
-        for event in player["Events"]:
-            w.writerow(event)
-
-    return
 
 #
 # main
