@@ -108,6 +108,9 @@ def CollectPlayerHist(id, name):
     
     return player
 
+def ranking(player):
+    return player["Events"][0]["Score"]
+
 #
 # Dump whatever we have got for this player
 #
@@ -119,12 +122,15 @@ def dump(players, verbose = False):
     for player in players:
         if player["Events"]:
             plot_last_games = min(len(player["Events"]), plot_last_games)
-            
-    for player in players:
+
+
+    sorted_players = sorted(players, key=lambda player: ranking(player), reverse=True)
+    
+    for player in sorted_players:
         if not player["Events"]:
             continue
         
-        print player["Name"], "(", player["Id"], ")", len(player["Events"]), "games"
+        print player["Name"], ":", "id", player["Id"], "games", len(player["Events"]), "ranking", ranking(player)
         if verbose:
             for event in player["Events"]:
                 print event["Date"], event["Score"]
@@ -135,13 +141,15 @@ def dump(players, verbose = False):
         scores = [event["Score"] for event in player["Events"]][:plot_last_games]
         scores.reverse()
         games = range(len(scores))
-        plt.plot(games, scores, linestyles[idx], label=player["Name"]+":"+player["Id"])
+        plt.plot(games, scores, linestyles[idx], label=player["Name"]+":"+str(ranking(player)))
 
         idx += 1
 
     # Plot
+    plt.tick_params(axis='y', which='both', labelleft='on', labelright='on')
+    plt.grid(b=True, which='both', color='0.65',linestyle='-')    
     plt.legend(loc='lower right', shadow=True)
-    plt.ylabel('Score')
+    plt.ylabel('Ranking')
     plt.xlabel('Game')
     plt.title("Most Recent " + str(plot_last_games) + " Games");
     plt.show()
@@ -156,13 +164,13 @@ def ImportPlayerHist(player):
     if not os.path.isfile(fname):
         return False
 
-    print "Import records from", fname
-
     with open(fname, 'rb') as f:
         r = csv.DictReader(f)
         for row in r:
             # Append a new entry
             player["Events"].append(row)
+
+    print player["Name"], ":", len(player["Events"]), "games are imported from", fname
             
     return True
 
@@ -197,7 +205,10 @@ except IOError as e:
     sys.exit( "I/O error({0}): {1}".format(e.errno, e.strerror) + ": chess.json")
 
 for p in ctrl["players"]:
-    players.append(CollectPlayerHist(p["id"], p["name"]))
+    if not p["id"].startswith('-'):
+        players.append(CollectPlayerHist(p["id"], p["name"]))
+    else:
+        print "Player", p['name'], "is skipped"
 
 
 # Visualize the data
