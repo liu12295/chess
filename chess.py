@@ -9,6 +9,17 @@ test = ""
 #test = "chess.html"
 
 #
+# Event class
+#
+
+class Event(object):
+    def __init__(self, Date, Event, URL, Score) :
+        self.Date = Date
+        self.Event = Event
+        self.URL = URL
+        self.Score = Score
+
+#
 # Player class
 #
 class Player(object):
@@ -30,7 +41,7 @@ class Player(object):
         if not self.Events:
             return 0
         else:
-            return self.Events[0]["Score"]
+            return self.Events[0].Score
 
     def add_event(self, event) :
         self.Events.append(event)
@@ -47,10 +58,11 @@ class Player(object):
         print "Create", fname
 
         with open(fname, 'wb') as f:
-            w = csv.DictWriter(f, self.Events[0].keys())
+            keys = self.Events[0].__dict__.keys()
+            w = csv.DictWriter(f, fieldnames=keys)
             w.writeheader()
             for event in self.Events:
-                w.writerow(event)
+                w.writerow(event.__dict__)
 
         return
 
@@ -134,7 +146,8 @@ def CollectPlayerHist(id, name):
                     continue
 
                 # Append a new entry
-                player.add_event(event)
+                this_event = Event(event["Date"], event["Event"], event["URL"], event["Score"])
+                player.add_event(this_event)
 
         # We are done if no new entry is added
         new_games = player.num_events() - prev_games;
@@ -171,12 +184,12 @@ def dump(players, verbose = False):
         print player.Name, ":", "id", player.Id, "games", player.num_events(), "ranking", player.ranking()
         if verbose:
             for event in player.Events:
-                print event["Date"], event["Score"]
+                print event.Date, event.Score
 
         sys.stdout.flush()
 
         # Plot setup
-        scores = [event["Score"] for event in player.Events[:plot_last_games]]
+        scores = [event.Score for event in player.Events[:plot_last_games]]
         scores.reverse()
         games = range(len(scores))
         plt.plot(games, scores, linestyles[idx], label=player.Name+":"+str(player.ranking()))
@@ -206,7 +219,8 @@ def ImportPlayerHist(player):
         r = csv.DictReader(f)
         for row in r:
             # Append a new entry
-            player.add_event(row)
+            this_event = Event(row["Date"], row["Event"], row["URL"], row["Score"])
+            player.add_event(this_event)
 
     print player.Name, ":", player.num_events(), "games are imported from", fname
     return True
