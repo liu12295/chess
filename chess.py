@@ -4,6 +4,8 @@ import os, csv, json, re, sys
 from pprint import pprint
 import matplotlib.pyplot as plt
 import numpy as np
+import random
+
 ctrl = {}
 test = ""
 #test = "chess.html"
@@ -165,8 +167,9 @@ def CollectPlayerHist(id, name):
 # Dump whatever we have got for this player
 #
 def dump(players, verbose = False):
-    linestyles = ['rD', 'g^', 'bo', 'b*', 'y^', 'b^', 'ro']
-    idx = 0
+    markers = ['o', 'v', '^', '<', '>', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', '|', '_']
+    mfc = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
+    ls = ['solid', 'dashed', 'dashdot', 'dotted']
     plot_last_games = 8000
 
     for player in players:
@@ -192,9 +195,7 @@ def dump(players, verbose = False):
         scores = [event.Score for event in player.Events[:plot_last_games]]
         scores.reverse()
         games = range(len(scores))
-        plt.plot(games, scores, linestyles[idx], label=player.Name+":"+str(player.ranking()))
-
-        idx += 1
+        plt.plot(games, scores, ls=random.choice(ls), marker=random.choice(markers), markerfacecolor=random.choice(mfc), label=player.Name+":"+str(player.ranking()))
 
     # Plot
     plt.tick_params(axis='y', which='both', labelleft='on', labelright='on')
