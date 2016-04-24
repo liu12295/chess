@@ -17,7 +17,7 @@ def ExtractPlayerName(tbl, id):
         a = tbl.b.get_text().split(':')
         if a[0].strip() == id:
             return a[1].strip()
-    
+        
     return ""
 
 #
@@ -105,25 +105,25 @@ def CollectPlayerHist(id, name):
 
     # Write data to chess.csv
     write2csv(player)
-        
+    
     return player
 
 #
 # Dump whatever we have got for this player
 #
 def dump(players, verbose = False):
-    linestyles = ['rD', 'g^', 'bo', 'b*']
+    linestyles = ['rD', 'g^', 'bo', 'b*', 'y^', 'b^', 'ro']
     idx = 0
     plot_last_games = 8000
 
     for player in players:
         if player["Events"]:
             plot_last_games = min(len(player["Events"]), plot_last_games)
-    
+            
     for player in players:
         if not player["Events"]:
             continue
-               
+        
         print player["Name"], "(", player["Id"], ")", len(player["Events"]), "games"
         if verbose:
             for event in player["Events"]:
@@ -145,7 +145,7 @@ def dump(players, verbose = False):
     plt.xlabel('Game')
     plt.title("Most Recent " + str(plot_last_games) + " Games");
     plt.show()
-        
+    
     return
 
 #
