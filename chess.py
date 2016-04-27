@@ -1,3 +1,6 @@
+#
+#
+#
 from bs4 import BeautifulSoup
 import requests
 import os, csv, json, re, sys
@@ -5,6 +8,7 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import datetime
 
 ctrl = {}
 test = ""
@@ -16,7 +20,7 @@ test = ""
 
 class Event(object):
     def __init__(self, Date, Event, URL, Score) :
-        self.Date = Date
+        self.Date = datetime.datetime.strptime(Date, "%Y-%m-%d %H:%M:%S")
         self.Event = Event
         self.URL = URL
         self.Score = Score
@@ -139,7 +143,7 @@ def CollectPlayerHist(id, name):
                 
                 event = {}
                 # Forget about unicode for the easy of eyeballs
-                event["Date"] = fields[0].text.encode('utf-8').strip()[:10];
+                event["Date"] = fields[0].text.encode('utf-8').strip()[:10] + " 00:00:00";
                 event["Event"] = fields[1].text.encode('utf-8').strip();
                 event["URL"] = fields[1].a.get("href").encode('utf-8').strip();
                 try:
@@ -167,7 +171,7 @@ def CollectPlayerHist(id, name):
 # Dump whatever we have got for this player
 #
 def dump(players, verbose = False):
-    markers = ['o', 'v', '^', '<', '>', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', '|', '_']
+    markers = ['o', 'v', '^', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'X']
     mfc = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
     ls = ['solid', 'dashed', 'dashdot', 'dotted']
     plot_last_games = 8000
