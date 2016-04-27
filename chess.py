@@ -174,16 +174,16 @@ def CollectPlayerHist(id, name):
 # Plot the trend by dates
 #
 def plot_by_dates(players) :
-    markers = ['o', 'v', '^', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd']
-    mfc = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
-    ls = ['solid', 'dashed', 'dashdot', 'dotted']
+    markers = ['o', 'v', '^', 's', 'p', '*', 'h', 'H', 'D', 'd']
+    mfc = ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c',
+           '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5',
+           '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f',
+           '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5']    
+    ls = ['dashed', 'dashdot', 'dotted']
 
     # Trace back to two years ago
     ending_date = datetime.datetime.now()
     starting_date = datetime.datetime(ending_date.year - 2, ending_date.month, 1)
-
-    # Sort players according to their latest ranking in descending order
-    sorted_players = sorted(players, key=lambda player: player.ranking(), reverse=True)
 
     # every monday
     mondays = WeekdayLocator(MONDAY)
@@ -191,7 +191,21 @@ def plot_by_dates(players) :
     months = MonthLocator(range(1, 13), bymonthday=1, interval=1)
     monthsFmt = DateFormatter("%b '%y")
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(20, 10))
+    
+    # Remove the plot frame lines. They are unnecessary here.
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+
+    # Ensure that the axis ticks only show up on the bottom and left of the plot.
+    # Ticks on the right and top of the plot are generally unnecessary.
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()    
+
+    # Sort players according to their latest ranking in descending order
+    sorted_players = sorted(players, key=lambda player: player.ranking(), reverse=True)
 
     for player in sorted_players:
         if player.has_no_event():
@@ -206,21 +220,23 @@ def plot_by_dates(players) :
         scores.reverse()
         dates.reverse()
 
-        ax.plot_date(dates, scores, ls=random.choice(ls), marker=random.choice(markers), \
-                     markerfacecolor=random.choice(mfc), label=player.Name+":"+str(player.ranking()))
+        ax.plot_date(dates, scores, \
+                     ls=random.choice(ls), marker=random.choice(markers), \
+                     markerfacecolor=random.choice(mfc), \
+                     label=player.Name+":"+str(player.ranking()))
+
+        ax.text(ending_date, player.ranking(), player.Name, fontsize=12, color='g')
 
     # Plot
     # format the ticks
-    #ax.plot_date(dates, opens, '-')
     ax.xaxis.set_major_locator(months)
     ax.xaxis.set_major_formatter(monthsFmt)
     ax.xaxis.set_minor_locator(mondays)
     ax.autoscale_view()
     ax.set_xlim(starting_date, ending_date)
     ax.grid(True)
-    #ax.grid(b=True, which='both', color='0.65',linestyle='-')    
     plt.legend(loc='lower right', shadow=True)
-    plt.tick_params(axis='y', which='both', labelleft='on', labelright='on')
+    plt.tick_params(axis='y', which='both', labelleft='on', labelright='off')
     plt.ylabel('Ranking')
     title = "Period: " + '{:%m/%d/%Y}'.format(starting_date) + ' ~ ' + '{:%m/%d/%Y}'.format(ending_date)
     plt.title(title)
