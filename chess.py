@@ -5,10 +5,13 @@ from bs4 import BeautifulSoup
 import requests
 import os, csv, json, re, sys
 from pprint import pprint
-import matplotlib.pyplot as plt
 import numpy as np
 import random
 import datetime
+
+import matplotlib.pyplot as plt
+from matplotlib.dates import MonthLocator, WeekdayLocator, DateFormatter
+from matplotlib.dates import MONDAY
 
 ctrl = {}
 test = ""
@@ -168,6 +171,70 @@ def CollectPlayerHist(id, name):
     return player
 
 #
+# Plot the data
+#
+def plot(players) :
+    markers = ['o', 'v', '^', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'X']
+    mfc = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
+    ls = ['solid', 'dashed', 'dashdot', 'dotted']
+
+    # Trace back to two years ago
+    ending_date = datetime.datetime.now()
+    starting_date = datetime.datetime(ending_date.year - 2, ending_date.month, 1)
+
+    # Sort players according to their latest ranking in descending order
+    sorted_players = sorted(players, key=lambda player: player.ranking(), reverse=True)
+
+    # every monday
+    mondays = WeekdayLocator(MONDAY)
+    # every 3rd month
+    months = MonthLocator(range(1, 13), bymonthday=1, interval=3)
+    monthsFmt = DateFormatter("%b '%y")
+
+    fig, ax = plt.subplots()
+
+    for player in sorted_players:
+        if player.has_no_event():
+            continue
+        
+        # Plot setup
+        scores = [event.Score for event in player.Events \
+                  if event.Date >= starting_date and event.Date <= ending_date]
+        dates = [event.Date for event in player.Events \
+                  if event.Date >= starting_date and event.Date <= ending_date]
+
+        scores.reverse()
+        dates.reverse()
+
+        ax.plot_date(dates, scores, ls=random.choice(ls), marker=random.choice(markers), \
+                     markerfacecolor=random.choice(mfc), label=player.Name+":"+str(player.ranking()))
+
+    # Plot
+    # format the ticks
+    #ax.plot_date(dates, opens, '-')
+    ax.xaxis.set_major_locator(months)
+    ax.xaxis.set_major_formatter(monthsFmt)
+    ax.xaxis.set_minor_locator(mondays)
+    ax.autoscale_view()
+    ax.set_xlim(starting_date, ending_date)
+    ax.grid(True)
+    #ax.grid(b=True, which='both', color='0.65',linestyle='-')    
+    plt.legend(loc='lower right', shadow=True)
+    plt.tick_params(axis='y', which='both', labelleft='on', labelright='on')
+    plt.ylabel('Ranking')
+    title = "Ranking Trend:" + '{:%m/%d/%Y}'.format(starting_date) + '-' + '{:%m/%d/%Y}'.format(ending_date)
+    plt.title(title)
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
+
+    plt.show()
+    
+    return
+    
+
+#
 # Dump whatever we have got for this player
 #
 def dump(players, verbose = False):
@@ -250,5 +317,6 @@ for p in ctrl["players"]:
 
 
 # Visualize the data
-dump(players, verbose=False)
+#dump(players, verbose=False)
 
+plot(players)
