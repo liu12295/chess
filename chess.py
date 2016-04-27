@@ -171,10 +171,10 @@ def CollectPlayerHist(id, name):
     return player
 
 #
-# Plot the data
+# Plot the trend by dates
 #
-def plot(players) :
-    markers = ['o', 'v', '^', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'X']
+def plot_by_dates(players) :
+    markers = ['o', 'v', '^', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd']
     mfc = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
     ls = ['solid', 'dashed', 'dashdot', 'dotted']
 
@@ -187,8 +187,8 @@ def plot(players) :
 
     # every monday
     mondays = WeekdayLocator(MONDAY)
-    # every 3rd month
-    months = MonthLocator(range(1, 13), bymonthday=1, interval=3)
+    # every the other month
+    months = MonthLocator(range(1, 13), bymonthday=1, interval=1)
     monthsFmt = DateFormatter("%b '%y")
 
     fig, ax = plt.subplots()
@@ -222,7 +222,7 @@ def plot(players) :
     plt.legend(loc='lower right', shadow=True)
     plt.tick_params(axis='y', which='both', labelleft='on', labelright='on')
     plt.ylabel('Ranking')
-    title = "Ranking Trend:" + '{:%m/%d/%Y}'.format(starting_date) + '-' + '{:%m/%d/%Y}'.format(ending_date)
+    title = "Period: " + '{:%m/%d/%Y}'.format(starting_date) + ' ~ ' + '{:%m/%d/%Y}'.format(ending_date)
     plt.title(title)
 
     # rotates and right aligns the x labels, and moves the bottom of the
@@ -235,9 +235,9 @@ def plot(players) :
     
 
 #
-# Dump whatever we have got for this player
+# Plot ranking per game
 #
-def dump(players, verbose = False):
+def plot_by_games(players, verbose = False):
     markers = ['o', 'v', '^', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'X']
     mfc = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
     ls = ['solid', 'dashed', 'dashdot', 'dotted']
@@ -317,6 +317,6 @@ for p in ctrl["players"]:
 
 
 # Visualize the data
-#dump(players, verbose=False)
+#plot_by_games(players, verbose=False)
 
-plot(players)
+plot_by_dates(players)
