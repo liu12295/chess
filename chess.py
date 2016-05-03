@@ -208,9 +208,6 @@ def plot_by_dates(players) :
     sorted_players = sorted(players, key=lambda player: player.ranking(), reverse=True)
 
     for player in sorted_players:
-        if player.has_no_event():
-            continue
-        
         # Plot setup
         scores = [event.Score for event in player.Events \
                   if event.Date >= starting_date and event.Date <= ending_date]
