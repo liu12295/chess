@@ -28,6 +28,9 @@ class Event(object):
         self.URL = URL
         self.Score = Score
 
+    def dump(self) :
+        print self.Date, self.Event, self.URL, self.Score
+
 #
 # Player class
 #
@@ -293,13 +296,21 @@ def plot_by_games(players, verbose = False):
     return
 
 #
-# Import events from file
+# Import events from file if data are not older than "age" days
 #
-def ImportPlayerHist(player):
+def ImportPlayerHist(player, age=14):
     fname = player.Id + ".csv"
     if not os.path.isfile(fname):
         return False
 
+    with open(fname, 'rb') as f:
+        r = csv.DictReader(f)
+        row = next(r)
+        this_event = Event(row["Date"], row["Event"], row["URL"], row["Score"])
+        delta = datetime.datetime.now() - this_event.Date
+        if delta.days > age:
+            return False
+    
     with open(fname, 'rb') as f:
         r = csv.DictReader(f)
         for row in r:
