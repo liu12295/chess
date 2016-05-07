@@ -235,7 +235,7 @@ def plot_by_dates(players) :
     ax.autoscale_view()
     ax.set_xlim(starting_date, ending_date)
     ax.grid(True)
-    plt.legend(loc='lower right', shadow=True)
+    plt.legend(loc='best', shadow=True)
     plt.tick_params(axis='y', which='both', labelleft='on', labelright='off')
     plt.ylabel('Ranking')
     title = "Period: " + '{:%m/%d/%Y}'.format(starting_date) + ' ~ ' + '{:%m/%d/%Y}'.format(ending_date)
@@ -298,7 +298,7 @@ def plot_by_games(players, verbose = False):
 #
 # Import events from file if data are not older than "age" days
 #
-def ImportPlayerHist(player, age=14):
+def ImportPlayerHist(player):
     fname = player.Id + ".csv"
     if not os.path.isfile(fname):
         return False
@@ -308,7 +308,7 @@ def ImportPlayerHist(player, age=14):
         row = next(r)
         this_event = Event(row["Date"], row["Event"], row["URL"], row["Score"])
         delta = datetime.datetime.now() - this_event.Date
-        if delta.days > age:
+        if delta.days > ctrl["age"]:
             return False
     
     with open(fname, 'rb') as f:
