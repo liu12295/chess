@@ -1,6 +1,7 @@
 {
     "baseURL" : "http://www.uschess.org/msa/MbrDtlTnmtHst.php?",
     "age" : 14,
+    "display_history" : 3,
     "players": [
         {
             "id" : "14372263",

@@ -186,7 +186,7 @@ def plot_by_dates(players) :
 
     # Trace back to two years ago
     ending_date = datetime.datetime.now()
-    starting_date = datetime.datetime(ending_date.year - 2, ending_date.month, 1)
+    starting_date = datetime.datetime(ending_date.year - ctrl["display_history"], ending_date.month, 1)
 
     # every monday
     mondays = WeekdayLocator(MONDAY)
