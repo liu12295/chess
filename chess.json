@@ -1,19 +1,31 @@
 {
     "baseURL" : "http://www.uschess.org/msa/MbrDtlTnmtHst.php?",
     "age" : 14,
-    "display_history" : 3,
+    "display_history" : 1.5,
     "players": [
         {
             "id" : "14372263",
             "name" : "ANTHONY LIU"
         },
         {
-            "id": "14782406",
+            "id": "-14782406",
             "name" : "CHRISTOPHER LIU"
         },
         {
-            "id" : "-14883805",
+            "id": "-12576254",
+            "name" : "ADLER LUIS RIBAYA"
+        },
+        {
+            "id" : "14883805",
             "name" : "BRANDON YANG XIA"
+        },
+        {
+            "id" : "-10164486",
+            "name" : "JOSEPH E WARHULA"
+        },
+        {
+            "id" : "-10327504",
+            "name" : "JAMES K WILLIAMSON"
         },
         {
             "id" : "-14372284",
@@ -28,7 +40,7 @@
             "name" : "MING LU"
         },
         {
-            "id" : "14398842",
+            "id" : "-14398842",
             "name" : "JUSTIN FENG"
         },
         {

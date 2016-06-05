@@ -28,10 +28,12 @@ from pprint import pprint
 import numpy as np
 import random
 import datetime
+from operator import itemgetter
 
 import matplotlib.pyplot as plt
 from matplotlib.dates import MonthLocator, WeekdayLocator, DateFormatter
 from matplotlib.dates import MONDAY
+from matplotlib.patches import Ellipse
 
 ctrl = {}
 test = ""
@@ -209,7 +211,7 @@ def plot_by_dates(players) :
 
     # Trace back to two years ago
     ending_date = datetime.datetime.now()
-    starting_date = datetime.datetime(ending_date.year - ctrl["display_history"], ending_date.month, 1)
+    starting_date = ending_date - datetime.timedelta(days=365*ctrl["display_history"])
 
     # every monday
     mondays = WeekdayLocator(MONDAY)
@@ -235,20 +237,29 @@ def plot_by_dates(players) :
 
     for player in sorted_players:
         # Plot setup
-        scores = [event.Score for event in player.Events \
-                  if event.Date >= starting_date and event.Date <= ending_date]
-        dates = [event.Date for event in player.Events \
-                  if event.Date >= starting_date and event.Date <= ending_date]
+        scores_and_dates = [(event.Score, event.Date) for event in player.Events \
+                            if event.Date >= starting_date and event.Date <= ending_date]
+        (scores, dates) = map(list, zip(*scores_and_dates))
 
-        scores.reverse()
-        dates.reverse()
-
-        ax.plot_date(dates, scores, \
-                     ls=random.choice(ls), marker=random.choice(markers), \
-                     markerfacecolor=random.choice(mfc), \
+        _mfc = random.choice(mfc)
+        ax.plot_date(dates, scores,
+                     ls=random.choice(ls), marker=random.choice(markers),
+                     markerfacecolor=_mfc,
                      label=player.Name+":"+str(player.ranking()))
 
-        ax.text(ending_date, player.ranking(), player.Name, fontsize=12, color='g')
+        # Annotate the peak
+        y, x = max(scores_and_dates, key=itemgetter(0))
+        label = player.Name.split()[0] + ":" + str(y)
+        ax.annotate(label, xy=(x, y), xycoords='data',
+                    color = _mfc,
+                    bbox=dict(boxstyle="round4", fc="w", alpha=0.75),
+                    xytext=(-100, 30), textcoords='offset points', size=12,
+                    arrowprops=dict(arrowstyle="fancy",
+                                    fc="0.3", ec="none",
+                                    patchB=Ellipse((2, -1), 0.5, 0.5),
+                                    connectionstyle="angle3,angleA=0,angleB=-90"))
+
+        #ax.text(ending_date, player.ranking(), player.Name, fontsize=12, color='g')
 
     # Plot
     # format the ticks
@@ -259,7 +270,7 @@ def plot_by_dates(players) :
     ax.set_xlim(starting_date, ending_date)
     ax.grid(True)
     plt.legend(loc='best', shadow=True)
-    plt.tick_params(axis='y', which='both', labelleft='on', labelright='off')
+    plt.tick_params(axis='y', which='both', labelleft='on', labelright='on')
     plt.ylabel('Ranking')
     title = "Period: " + '{:%m/%d/%Y}'.format(starting_date) + ' ~ ' + '{:%m/%d/%Y}'.format(ending_date)
     plt.title(title)
@@ -305,7 +316,8 @@ def plot_by_games(players, verbose = False):
         scores = [event.Score for event in player.Events[:plot_last_games]]
         scores.reverse()
         games = range(len(scores))
-        plt.plot(games, scores, ls=random.choice(ls), marker=random.choice(markers), markerfacecolor=random.choice(mfc), label=player.Name+":"+str(player.ranking()))
+        plt.plot(games, scores, ls=random.choice(ls), marker=random.choice(markers),
+                 markerfacecolor=random.choice(mfc), label=player.Name+":"+str(player.ranking()))
 
     # Plot
     plt.tick_params(axis='y', which='both', labelleft='on', labelright='on')
